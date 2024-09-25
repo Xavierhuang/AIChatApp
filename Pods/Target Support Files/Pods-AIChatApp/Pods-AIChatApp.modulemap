@@ -1,0 +1,6 @@
+framework module Pods_AIChatApp {
+  umbrella header "Pods-AIChatApp-umbrella.h"
+
+  export *
+  module * { export * }
+}
