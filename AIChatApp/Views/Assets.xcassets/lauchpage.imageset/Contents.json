@@ -1,0 +1,23 @@
+{
+  "images" : [
+    {
+      "filename" : "DALL·E 2024-10-06 01.47.25 - A very simple, modern logo for an AI chat app. The design features a minimalistic chat bubble symbol integrated with a subtle AI-related element like .png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "DALL·E 2024-10-06 01.47.25 - A very simple, modern logo for an AI chat app. The design features a minimalistic chat bubble symbol integrated with a subtle AI-related element like  1.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "DALL·E 2024-10-06 01.47.25 - A very simple, modern logo for an AI chat app. The design features a minimalistic chat bubble symbol integrated with a subtle AI-related element like  2.png",
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

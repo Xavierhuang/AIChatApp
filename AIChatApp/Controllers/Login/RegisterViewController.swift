@@ -7,8 +7,11 @@
 
 import UIKit
 import FirebaseAuth
+import JGProgressHUD
 
 class RegisterViewController: UIViewController {
+    
+    private let spinner = JGProgressHUD(style: .dark)
 
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -89,10 +92,6 @@ class RegisterViewController: UIViewController {
         return field
     }()
     
-    
-
-    
-    
     private let registerButton: UIButton = {
         let button = UIButton()
         button.setTitle("Register", for: .normal)
@@ -106,7 +105,7 @@ class RegisterViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Log In"
+        title = "Register"
         view.backgroundColor = .white
         // Customize the navigation bar appearance
            let appearance = UINavigationBarAppearance()
@@ -124,6 +123,8 @@ class RegisterViewController: UIViewController {
         
         emailField.delegate = self
         passwordField.delegate = self
+        firstNameField.delegate = self
+        lastNameField.delegate = self
         
         // Add subviews
         view.addSubview(scrollView)
@@ -175,19 +176,28 @@ class RegisterViewController: UIViewController {
         firstNameField.resignFirstResponder()
         lastNameField.resignFirstResponder()
         
-        guard let firstName = firstNameField.text,
-              let lastName = lastNameField.text, let email = emailField.text,let password = passwordField.text, !email.isEmpty, !password.isEmpty,!firstName.isEmpty,!lastName.isEmpty, password.count >= 6 else{
+        // Trim white spaces
+        guard let firstName = firstNameField.text?.trimmingCharacters(in: .whitespaces),
+              let lastName = lastNameField.text?.trimmingCharacters(in: .whitespaces),
+              let email = emailField.text?.trimmingCharacters(in: .whitespaces),
+              let password = passwordField.text?.trimmingCharacters(in: .whitespaces),
+              !email.isEmpty, !password.isEmpty, !firstName.isEmpty, !lastName.isEmpty, password.count >= 6 else {
             alertUserLoginError()
             return
         }
         // Firebase Log in
+        spinner.show(in: view)
         
         DatabaseManager.shared.userExists(with: email, completion:{ [weak self] exists in
             guard let strongSelf = self else{
                 return
             }
+            DispatchQueue.main.async {
+                strongSelf.spinner.dismiss()
+            }
+            
             guard !exists else{
-                strongSelf.alertUserLoginError(message: "Looks like a user account for that email address already existes.")
+                strongSelf.alertUserLoginError(message: "Looks like a user account for that email address already exists.")
                 return
             }
             FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password, completion: { authResult, error in
@@ -195,9 +205,26 @@ class RegisterViewController: UIViewController {
                     print("Error creating user")
                     return
                 }
-               
-                DatabaseManager.shared.insertUser(with: ChatAppUser(firstName:firstName,lastName:lastName,emialAddress:email))
-                 
+                let chatUser = ChatAppUser(firstName:firstName, lastName:lastName, emailAddress:email)
+                DatabaseManager.shared.insertUser(with: chatUser, completion: { success in
+                    if success {
+                        // upload image
+                        guard let image = strongSelf.imageView.image,
+                            let data = image.pngData() else {
+                                return
+                        }
+                        let filename = chatUser.profilePictureFileName
+                        StorageManager.shared.uploadProfilePicture(with: data, fileName: filename, completion: { result in
+                            switch result {
+                            case .success(let downloadUrl):
+                                UserDefaults.standard.set(downloadUrl, forKey: "profile_picture_url")
+                                print(downloadUrl)
+                            case .failure(let error):
+                                print("Storage maanger error: \(error)")
+                            }
+                        })
+                    }
+                })
                 strongSelf.navigationController?.dismiss(animated: true, completion: nil)
             })
             
@@ -221,15 +248,19 @@ class RegisterViewController: UIViewController {
 
 extension RegisterViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        if textField == emailField{
+        if textField == firstNameField {
+            lastNameField.becomeFirstResponder()
+        } else if textField == lastNameField {
+            emailField.becomeFirstResponder()
+        } else if textField == emailField {
             passwordField.becomeFirstResponder()
-        }
-        else if textField == passwordField{
-            registerButtonTapped()
+        } else if textField == passwordField {
+            registerButtonTapped() // Trigger registration when "Return" is pressed on password field
         }
         return true
     }
 }
+
 
 extension RegisterViewController:UIImagePickerControllerDelegate,UINavigationControllerDelegate{
     

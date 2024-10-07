@@ -11,9 +11,23 @@ import Firebase
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
+    var window: UIWindow?
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         FirebaseApp.configure()
+        
+        // Configure global navigation bar appearance
+                let appearance = UINavigationBarAppearance()
+                appearance.configureWithOpaqueBackground()
+                appearance.backgroundColor = .systemBackground
+                appearance.shadowColor = .lightGray
+                
+                // Apply appearance to all UINavigationBars
+                UINavigationBar.appearance().standardAppearance = appearance
+                UINavigationBar.appearance().scrollEdgeAppearance = appearance
+                UINavigationBar.appearance().compactAppearance = appearance
+        
         return true
     }
 
